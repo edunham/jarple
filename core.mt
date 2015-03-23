@@ -1,7 +1,6 @@
 def [=> strToInt] := import("lib/atoi")
 def [=> simple__quasiParser] := import("lib/simple")
-def [=> makeIRCClient, => connectIRCClient] := import("lib/irc/client",
-    [=> Timer])
+def [=> makeIRCClient, => connectIRCClient] := import("lib/irc/client", [=> Timer])
 
 def nick :Str := "monteBot"
 
@@ -15,8 +14,7 @@ object handler:
     to privmsg(client, source, channel, message):
         traceln("privmsg", client, source, channel, message)
         escape badSource:
-            def `@sourceNick!@sourceUser@@@sourceHost` exit badSource :=
-source
+            def `@sourceNick!@sourceUser@@@sourceHost` exit badSource := source
             if (message =~ `$nick: @action`):
                 switch (action):
                     match `join @newChannel`:
@@ -32,27 +30,26 @@ source
 
                     match `kill`:
                         client.say(channel,
-                            `$sourceNick: Sorry, I don't know how to do that.
-Yet.`)
+                            `$sourceNick: Sorry, I don't know how to do that. Yet.`)
 
                     match `list @otherChannel`:
                         escape ej:
                             def users := [k
-                                for k => _ in client.getUsers(otherChannel,
-ej)]
+                                for k => _ in client.getUsers(otherChannel, ej)]
                             client.say(channel, " ".join(users))
                         catch _:
-                            client.say(channel, `I can't see into
-$otherChannel`)
+                            client.say(channel, `I can't see into $otherChannel`)
 
                     match `in @{via (strToInt) seconds} say @utterance`:
                         when (Timer.fromNow(seconds)) ->
                             client.say(channel,
                                 `$sourceNick: Alarm: "$utterance"`)
 
+                    match `_ or _?`:
+                        #TODO: random choice
+                        client.say(channel, `$sourceNick: Neither.`)
                     match _:
-                        client.say(channel, `$sourceNick: I don't
-understand.`)
+                        client.say(channel, `$sourceNick: I don't understand.`)
         catch err:
             traceln(`Bad privmsg source $source couldn't be matched: $err`)
 
